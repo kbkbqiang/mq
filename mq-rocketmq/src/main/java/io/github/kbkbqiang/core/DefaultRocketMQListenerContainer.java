@@ -17,6 +17,8 @@ import io.github.kbkbqiang.properties.RocketMQProperties;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
+import java.util.Objects;
+
 /**
  * @author zhaoqiang
  * @Description
@@ -64,7 +66,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
     private RocketMQProperties rocketMQProperties;
 
     @Override
-    public void setupMessageListener(RocketMQListener<?> messageListener) {
+    public void setupMessageListener(RocketMQListener messageListener) {
         rocketMQListener = messageListener;
     }
 
@@ -122,7 +124,11 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
 
     @Override
     public void destroy() throws Exception {
-
+        this.setStarted(false);
+        if (Objects.nonNull(defaultMQPushConsumer)) {
+            defaultMQPushConsumer.shutdown();
+        }
+        log.info("container destroyed, {}", this.toString());
     }
 
     @Override

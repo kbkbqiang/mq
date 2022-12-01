@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -50,7 +51,7 @@ public class RocketMQConfig {
     }
 
     @Bean
-    @ConditionalOnBean(DefaultMQProducer.class)
+    @ConditionalOnClass(DefaultMQProducer.class)
     public DefaultMQProducer defaultMQProducer() {
         DefaultMQProducer producer = new DefaultMQProducer(rocketMQProperties.getProducerGroup(), getAclRPCHook(), true, null);
         producer.setNamesrvAddr(rocketMQProperties.getNameSrvAddr());
@@ -64,7 +65,7 @@ public class RocketMQConfig {
     }
 
     @PreDestroy
-    public void destory() {
+    public void destroy() {
         defaultMQProducer().shutdown();
     }
 
@@ -100,12 +101,12 @@ public class RocketMQConfig {
         private void registerContainer(String beanName, Object bean) {
             Class<?> clazz = AopUtils.getTargetClass(bean);
 
-            if (!RocketMQMessageListener.class.isAssignableFrom(bean.getClass())) {
-                throw new IllegalStateException(clazz + " is not instance of " + RocketMQMessageListener.class.getName());
+            if (!RocketMQListener.class.isAssignableFrom(bean.getClass())) {
+                throw new IllegalStateException(clazz + " is not instance of " + RocketMQListener.class.getName());
             }
             RocketMQListener rocketMQListener = (RocketMQListener) bean;
             RocketMQMessageListener annotation = clazz.getAnnotation(RocketMQMessageListener.class);
-            BeanDefinitionBuilder beanBuilder = BeanDefinitionBuilder.rootBeanDefinition(RocketMQListenerContainer.class);
+            BeanDefinitionBuilder beanBuilder = BeanDefinitionBuilder.rootBeanDefinition(DefaultRocketMQListenerContainer.class);
             beanBuilder.addPropertyValue("nameSrvAddr", rocketMQProperties.getNameSrvAddr());
             beanBuilder.addPropertyValue("topic", environment.resolvePlaceholders(annotation.topic()));
             beanBuilder.addPropertyValue("tag", environment.resolvePlaceholders(annotation.tag()));

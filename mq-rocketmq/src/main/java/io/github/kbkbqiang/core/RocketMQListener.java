@@ -11,7 +11,7 @@ import java.util.List;
  * @Description
  * @date 2022/11/22 18:32
  */
-public interface RocketMQListener<T> {
+public interface RocketMQListener {
 
     ConsumeConcurrentlyStatus consumerMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext);
 
